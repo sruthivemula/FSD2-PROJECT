@@ -1,0 +1,126 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Student Task Manager</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial;background:#eef3f9;color:#26344a}
+.container{max-width:900px;margin:40px auto;padding:20px}
+header{background:#2457a7;color:white;padding:30px;text-align:center;border-radius:12px}
+header p{margin-top:10px}
+.stats{display:flex;gap:15px;margin:20px 0}
+.card,.task-box{background:white;padding:22px;border-radius:10px;flex:1;text-align:center}
+.card h2{color:#2457a7;margin-top:10px}
+.task-box{text-align:left}
+.add-task{display:flex;gap:10px;margin:20px 0}
+input{flex:1;padding:12px;border:1px solid #ccc;border-radius:7px}
+button{padding:10px 14px;border:0;border-radius:7px;background:#2457a7;color:white;cursor:pointer}
+.task{display:flex;justify-content:space-between;align-items:center;background:#f3f6fb;padding:12px;margin-top:10px;border-radius:7px;gap:10px}
+.done{text-decoration:line-through;color:gray}
+.actions{display:flex;gap:5px}
+.edit{background:orange}
+.delete{background:#dc4444}
+footer{text-align:center;padding:20px;color:gray}
+@media(max-width:600px){
+.stats{flex-direction:column}
+.add-task,.task{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+<header>
+<h1>Student Task Manager</h1>
+<p>Organize your studies and achieve your goals.</p>
+</header>
+
+<div class="stats">
+<div class="card">Total Tasks<h2 id="total">0</h2></div>
+<div class="card">Completed<h2 id="completed">0</h2></div>
+<div class="card">Pending<h2 id="pending">0</h2></div>
+</div>
+
+<div class="task-box">
+<h2>Manage Your Tasks</h2>
+<div class="add-task">
+<input id="taskInput" placeholder="Enter your study task">
+<button onclick="addTask()">+ Add Task</button>
+</div>
+<h3>My Tasks</h3>
+<div id="taskList"></div>
+</div>
+
+<footer>Student Task Manager | FSD Mini Project</footer>
+</div>
+
+<script>
+let tasks=JSON.parse(localStorage.getItem("tasks"))||[];
+
+function save(){
+localStorage.setItem("tasks",JSON.stringify(tasks));
+}
+
+function addTask(){
+let input=document.getElementById("taskInput");
+let title=input.value.trim();
+if(!title)return alert("Enter a task!");
+tasks.push({id:Date.now(),title,completed:false});
+input.value="";
+save();display();
+}
+
+function display(){
+let list=document.getElementById("taskList");
+list.innerHTML="";
+tasks.forEach(t=>{
+let item=document.createElement("div");
+item.className="task";
+let title=document.createElement("span");
+title.textContent=t.title;
+if(t.completed)title.className="done";
+
+let actions=document.createElement("div");
+actions.className="actions";
+
+let done=document.createElement("button");
+done.textContent=t.completed?"Undo":"Done";
+done.onclick=()=>{t.completed=!t.completed;save();display()};
+
+let edit=document.createElement("button");
+edit.textContent="Edit";
+edit.className="edit";
+edit.onclick=()=>{
+let n=prompt("Edit task:",t.title);
+if(n&&n.trim()){t.title=n.trim();save();display()}
+};
+
+let del=document.createElement("button");
+del.textContent="Delete";
+del.className="delete";
+del.onclick=()=>{
+if(confirm("Delete this task?")){
+tasks=tasks.filter(x=>x.id!==t.id);
+save();display();
+}
+};
+
+actions.append(done,edit,del);
+item.append(title,actions);
+list.append(item);
+});
+
+if(!tasks.length)list.innerHTML="<p>No tasks yet. Add your first task!</p>";
+
+let completed=tasks.filter(t=>t.completed).length;
+document.getElementById("total").textContent=tasks.length;
+document.getElementById("completed").textContent=completed;
+document.getElementById("pending").textContent=tasks.length-completed;
+}
+
+display();
+</script>
+</body>
+</html>
